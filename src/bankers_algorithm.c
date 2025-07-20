@@ -90,6 +90,13 @@
             }
         }
 
+        // Compute need matrix: need = maximum - allocation
+        for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+            for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                need[i][j] = maximum[i][j] - allocation[i][j];
+            }
+        }
+
         fclose(file);
 
         // Debug print to verify maximum matrix
@@ -108,6 +115,16 @@
             printf("Customer %d: ", i);
             for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
                 printf("%d ", allocation[i][j]);
+            }
+            printf("\n");
+        }
+
+        // Debug print to verify need matrix
+        printf("\nInitial need matrix:\n");
+        for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+            printf("Customer %d: ", i);
+            for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                printf("%d ", need[i][j]);
             }
             printf("\n");
         }
