@@ -158,14 +158,23 @@ int main(int argc, char *argv[]) {
                 printf("Request approved.\n");
             else
                 printf("Request denied (unsafe state).\n");
+        } else if (sscanf(command, "RL %d %d %d %d %d", &cust, &req[0], &req[1], &req[2], &req[3]) == 5) {
+            // Validate customer number
+            if (cust < 0 || cust >= NUMBER_OF_CUSTOMERS) {
+                printf("Invalid customer ID.\n");
+                continue;
+            }
+
+            release_resources(cust, req);
         } else {
             // Command format was invalid
             printf("Invalid command. Try again.\n");
         }
+
     }
 
     return 0;
-    
+
 }
 
 
@@ -197,3 +206,24 @@ int request_resources(int customer_num, int request[]) {
 
     return 0;
 }
+
+
+void release_resources(int customer_num, int release[]) {
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        // Don't allow customers to release more than they currently hold
+        if (release[i] > allocation[customer_num][i]) {
+            printf("Error: Customer %d cannot release more of resource %d than allocated.\n", customer_num, i);
+            return;
+        }
+    }
+
+    // Perform the release
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        available[i] += release[i];
+        allocation[customer_num][i] -= release[i];
+        need[customer_num][i] += release[i];
+    }
+
+    printf("Resources released successfully.\n");
+}
+
