@@ -15,7 +15,7 @@
  *  Southern Methodist University
  * 
  * Compile using:
- *  gcc -o banker bankers_algorithm.c
+ *  gcc -o banker src/bankers_algorithm.c
 */
 
 
@@ -63,6 +63,36 @@ int main(int argc, char *argv[]) {
     printf("Initial available resources:\n");
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         printf("Resource %d: %d\n", i, available[i]);
+    }
+
+    // Open the input file
+    FILE *file = fopen("src/maximum.txt", "r");
+    if (file == NULL) {
+        perror("Error opening maximum.txt");
+        return 1;
+    }
+
+    // Read values into maximum[][]
+    for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+            if (fscanf(file, "%d%*c", &maximum[i][j]) != 1) {
+                fprintf(stderr, "Error reading maximum matrix at [%d][%d]\n", i, j);
+                fclose(file);
+                return 1;
+            }
+        }
+    }
+
+    fclose(file);
+
+    // Debug print to verify maximum matrix
+    printf("\nMaximum resource matrix:\n");
+    for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+        printf("Customer %d: ", i);
+        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+            printf("%d ", maximum[i][j]);
+        }
+        printf("\n");
     }
 
     return 0;

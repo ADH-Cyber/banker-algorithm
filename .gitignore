@@ -56,4 +56,6 @@ dkms.conf
 
 # Custom
 .vscode
+banker
 doc/offline
+src/maximum.txt
