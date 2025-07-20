@@ -55,5 +55,5 @@ dkms.conf
 *.dwo
 
 # Custom
-.vscode/
+.vscode
 doc/offline
