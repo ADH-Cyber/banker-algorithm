@@ -123,34 +123,36 @@ int main(int argc, char *argv[]) {
 
         // Handle wildcard (*)
         else if (input[0] == '*') {
-            printf("\nAvailable:\n");
+            printf("\nAvailable Resources:\n");
             for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-                printf("%d ", available[i]);
+                printf("R%d ", i);
             }
-            printf("\n\nMaximum:\n");
-            for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
-                for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                    printf("%d ", maximum[i][j]);
-                }
-                printf("\n");
+            printf("\n");
+            for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+                printf("%2d ", available[i]);
             }
 
-            printf("\nAllocation:\n");
-            for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
-                for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                    printf("%d ", allocation[i][j]);
-                }
-                printf("\n");
-            }
+            printf("\n\nResource State by Customer:\n");
+            printf("Cust | Allocated | Maximum   | Need\n");
+            printf("-----+-----------+-----------+-----------\n");
 
-            printf("\nNeed:\n");
             for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+                printf("%d    |", i);
                 for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                    printf("%d ", need[i][j]);
+                    printf("%2d", allocation[i][j]);
+                }
+                printf("   |");
+                for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                    printf("%2d", maximum[i][j]);
+                }
+                printf("   |");
+                for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                    printf("%2d", need[i][j]);
                 }
                 printf("\n");
             }
         }
+
 
         else {
             printf("Unknown command.\n");
