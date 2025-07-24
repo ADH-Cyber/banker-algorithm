@@ -163,98 +163,123 @@ int main(int argc, char *argv[]) {
 }
 
 
+int is_safe() {
+    int work[NUMBER_OF_RESOURCES];
+    int finish[NUMBER_OF_CUSTOMERS] = {0};
+
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        work[i] = available[i];
+    }
+
+    int changed;
+    do {
+        changed = 0;
+        for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+            if (!finish[i]) {
+                int can_finish = 1;
+                for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                    if (need[i][j] > work[j]) {
+                        can_finish = 0;
+                        break;
+                    }
+                }
+                if (can_finish) {
+                    printf("Customer %d can finish. Releasing resources back to work.\n", i);
+                    for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                        work[j] += allocation[i][j];
+                    }
+                    finish[i] = 1;
+                    changed = 1;
+                } else {
+                    printf("Customer %d CANNOT finish. Need: ", i);
+                    for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                        printf("%d ", need[i][j]);
+                    }
+                    printf(" | Work: ");
+                    for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                        printf("%d ", work[j]);
+                    }
+                    printf("\n");
+                }
+            }
+        }
+    } while (changed);
+
+    for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+        if (!finish[i]) return 0;
+    }
+    return 1;
+}
+
+
 int request_resources(int customer_num, int request[]) {
-    // Check if request <= need
+    printf("Simulating safety check for request: ");
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        printf("%d ", request[i]);
+    }
+    printf("\n");
+
+    // Step 1: Validate request
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         if (request[i] > need[customer_num][i]) {
             printf("Error: Request exceeds customer's remaining need.\n");
             return -1;
         }
-    }
-
-    // Check if request <= available
-    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         if (request[i] > available[i]) {
             printf("Error: Request exceeds available resources.\n");
             return -1;
         }
     }
 
-    // Allocate the requested resources
+    // Step 2: Tentatively allocate
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         available[i] -= request[i];
         allocation[customer_num][i] += request[i];
         need[customer_num][i] -= request[i];
     }
 
-    // Safety check using the Banker's algorithm
-    int work[NUMBER_OF_RESOURCES];
-    int finish[NUMBER_OF_CUSTOMERS] = {0};
-
-    // Copy current available to work[]
-    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        work[i] = available[i];
-    }
-
-    // Track whether any customer was able to finish in the current pass
-    int changed = 1;  
-    while (changed) {
-        changed = 0;
-
-        for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
-            if (!finish[i]) {  // Skip if this customer is already marked as finished
-                int can_finish = 1;
-
-                for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                    if (need[i][j] > work[j]) {  // Can't satisfy the customer's need
-                        can_finish = 0;
-                        break;
-                    }
-                }
-
-                if (can_finish) {
-                    // Simulate this customer completing and releasing its resources
-                    for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                        work[j] += allocation[i][j];
-                    }
-                    finish[i] = 1;
-                    changed = 1;  // At least one customer finished this round
-                }
-            }
+    // Step 3: Safety check
+    if (is_safe()) {
+        printf("Request granted. New available resources: ");
+        for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+            printf("%d ", available[i]);
         }
-    }
-
-
-    // Check if all processes could finish
-    for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
-        if (!finish[i]) {
-            // Roll back changes
-            for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                available[j] += request[j];
-                allocation[customer_num][j] -= request[j];
-                need[customer_num][j] += request[j];
-            }
-            return -1; // Unsafe state
+        printf("\n");
+        return 0;
+    } else {
+        // Roll back
+        for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+            available[i] += request[i];
+            allocation[customer_num][i] -= request[i];
+            need[customer_num][i] += request[i];
         }
+        printf("Request denied (unsafe state). Current available: ");
+        for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+            printf("%d ", available[i]);
+        }
+        printf("\n");
+        return -1;
     }
-
-    return 0; // Request is safe and approved
 }
 
 
 void release_resources(int customer_num, int release[]) {
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        // Ignore release request if it exceeds what's allocated
         if (release[i] > allocation[customer_num][i]) {
             printf("Error: Cannot release more than allocated. Ignoring release.\n");
             return;
         }
     }
 
-    // Apply release
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        allocation[customer_num][i] -= release[i];  // subtract from allocation
-        available[i] += release[i];                 // Add to available
+        allocation[customer_num][i] -= release[i];
+        available[i] += release[i];
         need[customer_num][i] = maximum[customer_num][i] - allocation[customer_num][i];
     }
+
+    printf("Resources released. New available resources: ");
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        printf("%d ", available[i]);
+    }
+    printf("\n");
 }
