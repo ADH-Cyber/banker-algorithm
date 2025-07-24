@@ -38,5 +38,55 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
 
+    // Attempt to open the input file
+    FILE *file = fopen("src/input.txt", "r");
+    if (file == NULL) {
+        perror("Error opening input.txt");
+        exit(EXIT_FAILURE);
+    }
+
+    // Read the maximum resource demand for each customer from the input file
+    for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+            if (fscanf(file, "%d", &maximum[i][j]) != 1) {
+                fprintf(stderr, "Error: Invalid or insufficient data in input.txt\n");
+                fclose(file);
+                exit(EXIT_FAILURE);
+            }
+            if (j < NUMBER_OF_RESOURCES - 1) {
+                fgetc(file); // Skip comma
+            }
+        }
+    }
+
+    fclose(file);
+
+    // Initialize allocation[][] and compute need[][]
+    for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+            allocation[i][j] = 0;
+            need[i][j] = maximum[i][j];
+        }
+    }
+
+    // Debug - print maximum matrix
+    printf("\nMaximum matrix:\n");
+    for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+            printf("%d ", maximum[i][j]);
+        }
+        printf("\n");
+    }
+
+    // Debug - print need matrix
+    printf("\nNeed matrix:\n");
+    for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+            printf("%d ", need[i][j]);
+        }
+        printf("\n");
+    }
+
+
     return 0;
 }
