@@ -87,6 +87,77 @@ int main(int argc, char *argv[]) {
         printf("\n");
     }
 
+    // Input Loop
+    char input[100];
+    printf("\nEnter commands (RQ/RL/*), or Ctrl+D to exit:\n");
+
+    while (printf("> "), fgets(input, sizeof(input), stdin) != NULL) {
+        // Handle request (RQ)
+        if (input[0] == 'R' && input[1] == 'Q') {
+            int customer_num, request[NUMBER_OF_RESOURCES];
+            if (sscanf(input, "RQ %d %d %d %d %d",
+                       &customer_num,
+                       &request[0], &request[1], &request[2], &request[3]) == 5) {
+                if (request_resources(customer_num, request) == 0) {
+                    printf("Request granted.\n");
+                } else {
+                    printf("Request denied (unsafe state).\n");
+                }
+            } else {
+                printf("Invalid RQ command format.\n");
+            }
+        }
+
+        // Handle release (RL)
+        else if (input[0] == 'R' && input[1] == 'L') {
+            int customer_num, release[NUMBER_OF_RESOURCES];
+            if (sscanf(input, "RL %d %d %d %d %d",
+                       &customer_num,
+                       &release[0], &release[1], &release[2], &release[3]) == 5) {
+                release_resources(customer_num, release);
+                printf("Resources released.\n");
+            } else {
+                printf("Invalid RL command format.\n");
+            }
+        }
+
+        // Handle wildcard (*)
+        else if (input[0] == '*') {
+            printf("\nAvailable:\n");
+            for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+                printf("%d ", available[i]);
+            }
+            printf("\n\nMaximum:\n");
+            for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+                for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                    printf("%d ", maximum[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("\nAllocation:\n");
+            for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+                for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                    printf("%d ", allocation[i][j]);
+                }
+                printf("\n");
+            }
+
+            printf("\nNeed:\n");
+            for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+                for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                    printf("%d ", need[i][j]);
+                }
+                printf("\n");
+            }
+        }
+
+        else {
+            printf("Unknown command.\n");
+        }
+    }
+
+    printf("Exiting...\n");
 
     return 0;
 }
