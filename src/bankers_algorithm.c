@@ -7,7 +7,7 @@
  *  Simulates the Banker’s Algorithm for deadlock avoidance by managing multiple customer 
  *  requests and releases for shared resources. The program checks for safe states using 
  *  the Safety Algorithm and ensures allocations do not lead to unsafe states that could 
- *  cause deadlock.
+ *  cause deadlock. 
  * 
  * Course: 
  *  CS7343 - Operating Systems
