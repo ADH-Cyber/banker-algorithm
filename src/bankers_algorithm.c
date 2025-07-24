@@ -240,3 +240,21 @@ int request_resources(int customer_num, int request[]) {
 
     return 0; // Request is safe and approved
 }
+
+
+void release_resources(int customer_num, int release[]) {
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        // Ignore release request if it exceeds what's allocated
+        if (release[i] > allocation[customer_num][i]) {
+            printf("Error: Cannot release more than allocated. Ignoring release.\n");
+            return;
+        }
+    }
+
+    // Apply release
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        allocation[customer_num][i] -= release[i];  // subtract from allocation
+        available[i] += release[i];                 // Add to available
+        need[customer_num][i] = maximum[customer_num][i] - allocation[customer_num][i];
+    }
+}
