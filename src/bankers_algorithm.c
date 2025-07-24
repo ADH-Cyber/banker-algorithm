@@ -161,3 +161,82 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+
+int request_resources(int customer_num, int request[]) {
+    // Check if request <= need
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        if (request[i] > need[customer_num][i]) {
+            printf("Error: Request exceeds customer's remaining need.\n");
+            return -1;
+        }
+    }
+
+    // Check if request <= available
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        if (request[i] > available[i]) {
+            printf("Error: Request exceeds available resources.\n");
+            return -1;
+        }
+    }
+
+    // Allocate the requested resources
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        available[i] -= request[i];
+        allocation[customer_num][i] += request[i];
+        need[customer_num][i] -= request[i];
+    }
+
+    // Safety check using the Banker's algorithm
+    int work[NUMBER_OF_RESOURCES];
+    int finish[NUMBER_OF_CUSTOMERS] = {0};
+
+    // Copy current available to work[]
+    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
+        work[i] = available[i];
+    }
+
+    // Track whether any customer was able to finish in the current pass
+    int changed = 1;  
+    while (changed) {
+        changed = 0;
+
+        for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+            if (!finish[i]) {  // Skip if this customer is already marked as finished
+                int can_finish = 1;
+
+                for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                    if (need[i][j] > work[j]) {  // Can't satisfy the customer's need
+                        can_finish = 0;
+                        break;
+                    }
+                }
+
+                if (can_finish) {
+                    // Simulate this customer completing and releasing its resources
+                    for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                        work[j] += allocation[i][j];
+                    }
+                    finish[i] = 1;
+                    changed = 1;  // At least one customer finished this round
+                }
+            }
+        }
+    }
+
+
+    // Check if all processes could finish
+    for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
+        if (!finish[i]) {
+            // Roll back changes
+            for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
+                available[j] += request[j];
+                allocation[customer_num][j] -= request[j];
+                need[customer_num][j] += request[j];
+            }
+            return -1; // Unsafe state
+        }
+    }
+
+    return 0; // Request is safe and approved
+}
