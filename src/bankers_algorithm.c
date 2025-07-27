@@ -37,8 +37,15 @@ void release_resources(int customer_num, int release[]);
 
 int main(int argc, char *argv[]) {
     // Check if correct number of arguments provided
-    if (argc != NUMBER_OF_RESOURCES + 1) {
-        fprintf(stderr, "Usage: %s <R1> <R2> <R3> <R4>\n", argv[0]);
+    if (argc != NUMBER_OF_RESOURCES + 1) 
+    {
+        fprintf(
+            stderr, 
+            "\033[1;31mError: \033[0m"    
+            "Declare four resources for this command."
+            "\033[90m\n   ex: %s <R1> <R2> <R3> <R4>\033[0m\n",
+            argv[0]
+        );
         exit(EXIT_FAILURE);
     }
 
@@ -46,22 +53,22 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         available[i] = atoi(argv[i + 1]);
         if (available[i] < 0) {
-            fprintf(stderr, "Error: Resource values must be non-negative integers.\n");
+            fprintf(
+                stderr, 
+                "\033[1;31mError: \033[0m"
+                "Values must be non-negative integers.\n"
+            );
             exit(EXIT_FAILURE);
         }
     }
 
-    // available[] has been initialized, print to screen
-    printf("Initial available resources: ");
-    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        printf("%d ", available[i]);
-    }
-    printf("\n");
-
     // Attempt to open the input file
     FILE *file = fopen("src/input.txt", "r");
     if (file == NULL) {
-        perror("Error opening input.txt");
+        perror(
+            "\033[1;31mError: \033[0m"
+            "Cannot open input.txt"
+        );
         exit(EXIT_FAILURE);
     }
 
@@ -69,12 +76,16 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
         for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
             if (fscanf(file, "%d", &maximum[i][j]) != 1) {
-                fprintf(stderr, "Error: Invalid or insufficient data in input.txt\n");
+                fprintf(
+                    stderr, 
+                    "\033[1;31mError: \033[0m"
+                    "Invalid or insufficient data in input.txt\n"
+                );
                 fclose(file);
                 exit(EXIT_FAILURE);
             }
             if (j < NUMBER_OF_RESOURCES - 1) {
-                fgetc(file); // Skip comma
+                fgetc(file); // Skip commas
             }
         }
     }
@@ -89,28 +100,24 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Debug - print maximum matrix
-    printf("\nMaximum matrix:\n");
-    for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
-        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-            printf("%d ", maximum[i][j]);
-        }
-        printf("\n");
-    }
-
-    // Debug - print need matrix
-    printf("\nNeed matrix:\n");
-    for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
-        for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-            printf("%d ", need[i][j]);
-        }
-        printf("\n");
-    }
+    // Input Menu
+    char input[100];
+    printf(
+        "\033[1;95m"
+        "\n ~~ BANKER'S ALGORITHM ~~"
+        "\033[0;96m"
+        "\n a u s t i n   h o w a r d"
+        "\033[92m"
+        "\n[======= COMMANDS =======]"
+        "\033[90m"
+        "\n    RQ: Request resources"
+        "\n    RL: Release resources"
+        "\n     *: Display resource arrays"
+        "\nCtrl+D: Exit program"
+        "\033[0m\n"
+    );
 
     // Input Loop
-    char input[100];
-    printf("\nEnter commands (RQ/RL/*), or Ctrl+D to exit:\n");
-
     while (printf("> "), fgets(input, sizeof(input), stdin) != NULL) {
         // Handle request (RQ)
         if (input[0] == 'R' && input[1] == 'Q') {
@@ -119,12 +126,16 @@ int main(int argc, char *argv[]) {
                        &customer_num,
                        &request[0], &request[1], &request[2], &request[3]) == 5) {
                 if (request_resources(customer_num, request) == 0) {
-                    printf("Request granted.\n");
+                    printf("\033[1;32mRequest granted.\033[0m\n");
                 } else {
-                    printf("Request denied (unsafe state).\n");
+                    printf("\033[1;31mRequest denied (unsafe state).\033[0m\n");
                 }
             } else {
-                printf("Invalid RQ command format.\n");
+                printf(
+                    "\033[1;31mError: \033[0m"
+                    "Invalid RQ command format.\n"
+                    "\033[90m Enter commands (RQ/RL/*/Ctrl+D):\033[0m\n"
+                );
             }
         }
 
@@ -135,9 +146,13 @@ int main(int argc, char *argv[]) {
                        &customer_num,
                        &release[0], &release[1], &release[2], &release[3]) == 5) {
                 release_resources(customer_num, release);
-                printf("Resources released.\n");
+                printf("\033[1;32mResources released.\033[0m\n");
             } else {
-                printf("Invalid RL command format.\n");
+                printf(
+                    "\033[1;31mError: \033[0m"
+                    "Invalid RL command format.\n"
+                    "\033[90m Enter commands (RQ/RL/*/Ctrl+D):\033[0m\n"
+                );
             }
         }
 
