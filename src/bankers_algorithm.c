@@ -15,7 +15,7 @@
  *  Southern Methodist University
  * 
  * Compile using:
- *  gcc -o banker src/bankers_algorithm.c
+ *  gcc -o a.out src/bankers_algorithm.c
 */
 
 #include <stdio.h>
