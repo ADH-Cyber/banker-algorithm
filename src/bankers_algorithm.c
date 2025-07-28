@@ -51,10 +51,22 @@ int main(int argc, char *argv[]) {
 
     // Parse and populate available[] from command-line arguments
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        available[i] = atoi(argv[i + 1]);
+        char *endptr;
+        available[i] = strtol(argv[i + 1], &endptr, 10);
+
+        if (*endptr != '\0') {
+            fprintf(
+                stderr,
+                "\033[1;31mError: \033[0m"
+                "Invalid character in resource declaration: '%s'\n",
+                argv[i + 1]
+            );
+            exit(EXIT_FAILURE);
+        }
+
         if (available[i] < 0) {
             fprintf(
-                stderr, 
+                stderr,
                 "\033[1;31mError: \033[0m"
                 "Values must be non-negative integers.\n"
             );
