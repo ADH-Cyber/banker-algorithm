@@ -37,8 +37,7 @@ void release_resources(int customer_num, int release[]);
 
 int main(int argc, char *argv[]) {
     // Check if correct number of arguments provided
-    if (argc != NUMBER_OF_RESOURCES + 1) 
-    {
+    if (argc != NUMBER_OF_RESOURCES + 1) {
         fprintf(
             stderr, 
             "\033[1;31mError: \033[0m"    
@@ -54,6 +53,7 @@ int main(int argc, char *argv[]) {
         char *endptr;
         available[i] = strtol(argv[i + 1], &endptr, 10);
 
+        // Checks that all args are integers
         if (*endptr != '\0') {
             fprintf(
                 stderr,
@@ -64,6 +64,7 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
 
+        // Checks that all args are non-negative
         if (available[i] < 0) {
             fprintf(
                 stderr,
@@ -96,8 +97,9 @@ int main(int argc, char *argv[]) {
                 fclose(file);
                 exit(EXIT_FAILURE);
             }
+            // Skip the commas
             if (j < NUMBER_OF_RESOURCES - 1) {
-                fgetc(file); // Skip commas
+                fgetc(file); 
             }
         }
     }
@@ -135,8 +137,9 @@ int main(int argc, char *argv[]) {
         if (input[0] == 'R' && input[1] == 'Q') {
             int customer_num, request[NUMBER_OF_RESOURCES];
             if (sscanf(input, "RQ %d %d %d %d %d",
-                       &customer_num,
-                       &request[0], &request[1], &request[2], &request[3]) == 5) {
+                       &customer_num, &request[0], 
+                       &request[1], &request[2], 
+                       &request[3]) == 5) {
                 if (request_resources(customer_num, request) == 0) {
                     printf("\033[1;32mRequest granted.\033[0m\n");
                 } else {
@@ -146,7 +149,7 @@ int main(int argc, char *argv[]) {
                 printf(
                     "\033[1;31mError: \033[0m"
                     "Invalid RQ command format.\n"
-                    "\033[90mEnter commands (RQ/RL/*/Ctrl+D):\033[0m\n"
+                    "\033[90mex. RQ <customer_index> <R1> <R2> <R3> <R4>\033[0m\n"
                 );
             }
         }
@@ -162,7 +165,7 @@ int main(int argc, char *argv[]) {
                 printf(
                     "\033[1;31mError: \033[0m"
                     "Invalid RL command format.\n"
-                    "\033[90mEnter commands (RQ/RL/*/Ctrl+D):\033[0m\n"
+                    "\033[90mex. RL <customer_index> <R1> <R2> <R3> <R4>\033[0m\n"
                 );
             }
         }
@@ -184,6 +187,7 @@ int main(int argc, char *argv[]) {
                 "-----+-----------+-----------+-----------\n"
                 );
 
+            // Populate Table
             for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
                 printf("%d    |", i);
                 for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
@@ -221,6 +225,7 @@ int is_safe() {
     int work[NUMBER_OF_RESOURCES];
     int finish[NUMBER_OF_CUSTOMERS] = {0};
 
+    // Initialize work with the current available resources
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         work[i] = available[i];
     }
@@ -228,16 +233,23 @@ int is_safe() {
     int changed;
     do {
         changed = 0;
+
+        // Attempt to find a customer whose needs can be satisfied
         for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
             if (!finish[i]) {
                 int can_finish = 1;
+                
+                // Check if the customer's need is <= work
                 for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
                     if (need[i][j] > work[j]) {
                         can_finish = 0;
                         break;
                     }
                 }
+
+                // If the customer can finish, simulate them completing
                 if (can_finish) {
+                    
                     for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
                         work[j] += allocation[i][j];
                     }
@@ -248,6 +260,7 @@ int is_safe() {
         }
     } while (changed);
 
+    // If any customer is not marked finished, system is unsafe
     for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
         if (!finish[i]) return 0;
     }
@@ -288,6 +301,8 @@ int request_resources(int customer_num, int request[]) {
 
 
 void release_resources(int customer_num, int release[]) {
+
+    // Validate the release does not exceed what was allocated
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         if (release[i] > allocation[customer_num][i]) {
             printf(
@@ -298,6 +313,7 @@ void release_resources(int customer_num, int release[]) {
         }
     }
 
+    // Apply the release as requested
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         allocation[customer_num][i] -= release[i];
         available[i] += release[i];
