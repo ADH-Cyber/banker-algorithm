@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
                 printf(
                     "\033[1;31mError: \033[0m"
                     "Invalid RQ command format.\n"
-                    "\033[90m Enter commands (RQ/RL/*/Ctrl+D):\033[0m\n"
+                    "\033[90mEnter commands (RQ/RL/*/Ctrl+D):\033[0m\n"
                 );
             }
         }
@@ -146,19 +146,18 @@ int main(int argc, char *argv[]) {
                        &customer_num,
                        &release[0], &release[1], &release[2], &release[3]) == 5) {
                 release_resources(customer_num, release);
-                printf("\033[1;32mResources released.\033[0m\n");
             } else {
                 printf(
                     "\033[1;31mError: \033[0m"
                     "Invalid RL command format.\n"
-                    "\033[90m Enter commands (RQ/RL/*/Ctrl+D):\033[0m\n"
+                    "\033[90mEnter commands (RQ/RL/*/Ctrl+D):\033[0m\n"
                 );
             }
         }
 
         // Handle wildcard (*)
         else if (input[0] == '*') {
-            printf("\nAvailable Resources:\n");
+            printf("\033[1;92m\nAvailable Resources:\033[0m\n");
             for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
                 printf("R%d ", i);
             }
@@ -167,9 +166,11 @@ int main(int argc, char *argv[]) {
                 printf("%2d ", available[i]);
             }
 
-            printf("\n\nResource State by Customer:\n");
-            printf("Cust | Allocated | Maximum   | Need\n");
-            printf("-----+-----------+-----------+-----------\n");
+            printf(
+                "\033[1;92m\n\nResource State by Customer:\033[0m\n"
+                "Cust | Allocated | Maximum   | Need\n"
+                "-----+-----------+-----------+-----------\n"
+                );
 
             for (int i = 0; i < NUMBER_OF_CUSTOMERS; i++) {
                 printf("%d    |", i);
@@ -190,11 +191,15 @@ int main(int argc, char *argv[]) {
 
 
         else {
-            printf("Unknown command.\n");
+            printf(
+                "\033[1;31mError: \033[0m"
+                "Unknown command.\n"
+                "\033[90mEnter commands (RQ/RL/*/Ctrl+D):\033[0m\n"
+            );
         }
     }
 
-    printf("Exiting...\n");
+    printf("\033[1;92mExiting...\033[0m\n");
 
     return 0;
 }
@@ -221,22 +226,11 @@ int is_safe() {
                     }
                 }
                 if (can_finish) {
-                    printf("Customer %d can finish. Releasing resources back to work.\n", i);
                     for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
                         work[j] += allocation[i][j];
                     }
                     finish[i] = 1;
                     changed = 1;
-                } else {
-                    printf("Customer %d CANNOT finish. Need: ", i);
-                    for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                        printf("%d ", need[i][j]);
-                    }
-                    printf(" | Work: ");
-                    for (int j = 0; j < NUMBER_OF_RESOURCES; j++) {
-                        printf("%d ", work[j]);
-                    }
-                    printf("\n");
                 }
             }
         }
@@ -250,38 +244,24 @@ int is_safe() {
 
 
 int request_resources(int customer_num, int request[]) {
-    printf("Simulating safety check for request: ");
-    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        printf("%d ", request[i]);
-    }
-    printf("\n");
 
-    // Step 1: Validate request
+    // Validate request
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        if (request[i] > need[customer_num][i]) {
-            printf("Error: Request exceeds customer's remaining need.\n");
-            return -1;
-        }
-        if (request[i] > available[i]) {
-            printf("Error: Request exceeds available resources.\n");
-            return -1;
-        }
+        // Exceeds remaining need
+        if (request[i] > need[customer_num][i]) {return -1;}
+        // Exceeds available resources
+        if (request[i] > available[i]) {return -1;}
     }
 
-    // Step 2: Tentatively allocate
+    // Tentatively allocate resources per request
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         available[i] -= request[i];
         allocation[customer_num][i] += request[i];
         need[customer_num][i] -= request[i];
     }
 
-    // Step 3: Safety check
+    // Safety check
     if (is_safe()) {
-        printf("Request granted. New available resources: ");
-        for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-            printf("%d ", available[i]);
-        }
-        printf("\n");
         return 0;
     } else {
         // Roll back
@@ -290,11 +270,6 @@ int request_resources(int customer_num, int request[]) {
             allocation[customer_num][i] -= request[i];
             need[customer_num][i] += request[i];
         }
-        printf("Request denied (unsafe state). Current available: ");
-        for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-            printf("%d ", available[i]);
-        }
-        printf("\n");
         return -1;
     }
 }
@@ -303,7 +278,10 @@ int request_resources(int customer_num, int request[]) {
 void release_resources(int customer_num, int release[]) {
     for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         if (release[i] > allocation[customer_num][i]) {
-            printf("Error: Cannot release more than allocated. Ignoring release.\n");
+            printf(
+                "\033[1;31mError: \033[0m"
+                "Cannot release more than allocated.\n"
+            );
             return;
         }
     }
@@ -314,9 +292,5 @@ void release_resources(int customer_num, int release[]) {
         need[customer_num][i] = maximum[customer_num][i] - allocation[customer_num][i];
     }
 
-    printf("Resources released. New available resources: ");
-    for (int i = 0; i < NUMBER_OF_RESOURCES; i++) {
-        printf("%d ", available[i]);
-    }
-    printf("\n");
+    printf("\033[1;32mResources released.\033[0m\n");
 }
